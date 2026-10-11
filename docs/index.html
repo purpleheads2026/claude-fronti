@@ -1,0 +1,1038 @@
+<!doctype html>
+<html lang="it" data-lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fronti — un progetto, più fronti, una sessione per fronte</title>
+<meta name="description" content="Plugin per Claude Code: divide ogni progetto in fronti (app, sito, server, marketing). Una sessione per fronte, stato nei file, commit puliti.">
+<link rel="canonical" href="https://purpleheads2026.github.io/claude-fronti/">
+<meta property="og:title" content="Fronti — un progetto, più fronti, una sessione per fronte">
+<meta property="og:description" content="Plugin per Claude Code: ogni sessione nel suo fronte, stato nei file, commit puliti. One project, many fronts, one session per front.">
+<meta property="og:image" content="https://purpleheads2026.github.io/claude-fronti/img/tav-01-it.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="author" content="purpleheads — Samuel">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2317130F'/%3E%3Cpath d='M9 7h15v4H14v4h8v4h-8v6H9z' fill='%23F0ECE4'/%3E%3Crect x='22' y='21' width='4' height='4' fill='%23E74423'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Token: ../design-tokens.json — nessun valore di spacing, testo, colore o easing fuori da qui. */
+:root {
+  --space-0: 0px; --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px;
+  --space-6: 32px; --space-7: 48px; --space-8: 64px; --space-9: 96px; --space-10: 128px; --space-11: 192px; --space-12: 256px;
+
+  --display-xl: clamp(3.5rem, 11vw, 10rem);
+  --display-lg: clamp(2rem, 4.5vw, 4rem);
+  --display-md: clamp(1.375rem, 2.2vw, 2rem);
+  --body-lg: clamp(1.125rem, 1.5vw, 1.375rem);
+  --body-md: clamp(1rem, 1vw, 1.0625rem);
+  --body-sm: clamp(0.875rem, 0.9vw, 0.9375rem);
+  --label: clamp(0.6875rem, 0.75vw, 0.75rem);
+
+  --font-display: 'Archivo', 'Helvetica Neue', sans-serif;
+  --font-body: 'Archivo', 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+  --carta: #F0ECE4; --carta-2: #E5DFD3; --filo: #C4BDB0; --inchiostro-2: #625D55; --inchiostro: #17130F;
+  --vermiglio: #E74423; --vermiglio-scuro: #B6351B;
+  --cobalto: #284CC3; --verde: #077649; --ocra: #DE9D16;
+  --notte: #110E0A; --notte-2: #231E19; --nebbia: #A9A49B;
+  --vermiglio-notte: #F57055; --cobalto-notte: #7295E9; --verde-notte: #54B581;
+
+  --ease-standard: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-enter: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ease-exit: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+  --dur-fast: 0.3s; --dur-base: 0.6s; --dur-slow: 1s;
+
+  --radius-sm: 4px;
+
+  --bg: var(--carta); --bg-2: var(--carta-2); --fg: var(--inchiostro); --fg-2: var(--inchiostro-2);
+  --hair: var(--carta-2); --rule: var(--filo); --accent: var(--vermiglio); --accent-text: var(--vermiglio-scuro);
+  --f-app: var(--cobalto); --f-sito: var(--vermiglio); --f-server: var(--verde); --f-mkt: var(--ocra);
+  --accent-su-fg: var(--vermiglio);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: var(--notte); --bg-2: var(--notte-2); --fg: var(--carta); --fg-2: var(--nebbia);
+    --hair: var(--notte-2); --rule: var(--inchiostro-2); --accent: var(--vermiglio-notte); --accent-text: var(--vermiglio-notte);
+    --f-app: var(--cobalto-notte); --f-sito: var(--vermiglio-notte); --f-server: var(--verde-notte);
+    --accent-su-fg: var(--vermiglio-scuro);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: var(--notte); --bg-2: var(--notte-2); --fg: var(--carta); --fg-2: var(--nebbia);
+  --hair: var(--notte-2); --rule: var(--inchiostro-2); --accent: var(--vermiglio-notte); --accent-text: var(--vermiglio-notte);
+  --f-app: var(--cobalto-notte); --f-sito: var(--vermiglio-notte); --f-server: var(--verde-notte);
+  --accent-su-fg: var(--vermiglio-scuro);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+[id] { scroll-margin-block-start: var(--space-8); }
+body {
+  margin: var(--space-0); background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: var(--body-md); line-height: 1.6;
+  font-feature-settings: "ss01", "tnum";
+}
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.2em; transition: text-underline-offset var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard); }
+a:hover { color: var(--accent-text); text-underline-offset: 0.35em; }
+:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 3px; }
+code, kbd, pre { font-family: var(--font-mono); }
+.display-xl, .display-lg, .display-md { text-wrap: balance; }
+.body-lg, .body-md, .body-sm, .nota { text-wrap: pretty; }
+::selection { background: var(--accent); color: var(--inchiostro); }
+
+/* lingua: si vede solo quella scelta */
+:root[data-lang="it"] [lang="en"]:not(html), :root[data-lang="en"] [lang="it"]:not(html) { display: none !important; }
+
+/* ruoli tipografici */
+.display-xl { font-family: var(--font-display); font-size: var(--display-xl); line-height: 0.88; font-weight: 800; font-stretch: 125%; letter-spacing: -0.03em; margin: var(--space-0); }
+.display-lg { font-family: var(--font-display); font-size: var(--display-lg); line-height: 1.0; font-weight: 800; font-stretch: 125%; letter-spacing: -0.02em; margin: var(--space-0); }
+.display-md { font-family: var(--font-display); font-size: var(--display-md); line-height: 1.1; font-weight: 700; font-stretch: 112%; letter-spacing: -0.01em; margin: var(--space-0); }
+.body-lg { font-size: var(--body-lg); line-height: 1.45; margin: var(--space-0); }
+.body-md { font-size: var(--body-md); line-height: 1.6; margin: var(--space-0); }
+.body-sm { font-size: var(--body-sm); line-height: 1.5; margin: var(--space-0); }
+.label { font-family: var(--font-mono); font-size: var(--label); line-height: 1.25; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.mono { font-family: var(--font-mono); }
+
+/* contratto di sezione */
+.section { padding: var(--space-7) var(--space-4); border-top: 2px solid var(--fg); }
+.section__inner { max-width: 1200px; margin-inline: auto; display: grid; gap: var(--space-5); }
+@media (min-width: 1024px) { .section { padding: var(--space-10) var(--space-8); } }
+.section__head { display: grid; gap: var(--space-4); max-width: 760px; }
+.eyebrow { color: var(--accent-text); display: flex; gap: var(--space-3); align-items: center; }
+.eyebrow::before { content: ""; inline-size: var(--space-6); block-size: 2px; background: currentColor; }
+
+/* barra */
+.barra { position: sticky; top: var(--space-0); z-index: 10; background: var(--bg); border-bottom: 2px solid var(--fg); }
+.barra__inner { max-width: calc(1200px + var(--space-8) * 2); margin-inline: auto; padding: var(--space-3) var(--space-4); display: flex; align-items: center; gap: var(--space-4); }
+@media (min-width: 1024px) { .barra__inner { padding-inline: var(--space-8); } }
+.marchio { display: flex; align-items: center; gap: var(--space-2); text-decoration: none; }
+.marchio__f { inline-size: var(--space-5); block-size: var(--space-5); background: var(--fg); color: var(--bg); display: grid; place-items: center; font-family: var(--font-display); font-weight: 900; font-stretch: 125%; font-size: var(--body-sm); position: relative; }
+.marchio__f::after { content: ""; position: absolute; inset-inline-end: calc(var(--space-1) * -1); inset-block-end: calc(var(--space-1) * -1); inline-size: var(--space-2); block-size: var(--space-2); background: var(--accent); }
+.barra__nav { margin-inline-start: auto; display: flex; align-items: center; gap: var(--space-4); }
+.barra__nav a { text-decoration: none; padding-block: var(--space-2); }
+.nascondi-mobile { display: none; }
+@media (min-width: 768px) { .nascondi-mobile { display: inline; } }
+.lingue { display: inline-flex; border: 2px solid var(--fg); }
+.lingue button {
+  font: inherit; font-family: var(--font-mono); font-size: var(--label); font-weight: 600; letter-spacing: 0.08em;
+  padding: var(--space-2) var(--space-3); border: 0; background: transparent; color: var(--fg); cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+}
+.lingue button:hover { background: var(--bg-2); }
+.lingue button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.lingue button:active { background: var(--accent); color: var(--inchiostro); }
+
+/* hero */
+.hero { padding: var(--space-8) var(--space-4) var(--space-7); position: relative; overflow: clip; }
+@media (min-width: 1024px) { .hero { padding: var(--space-10) var(--space-8) var(--space-9); } }
+.hero__inner { max-width: 1200px; margin-inline: auto; display: grid; gap: var(--space-6); }
+.hero__titolo { display: grid; gap: var(--space-4); }
+.hero h1 { position: relative; }
+.hero h1 .punto { color: var(--accent); }
+.quota { display: grid; grid-template-columns: auto 1fr auto 1fr auto; align-items: center; gap: var(--space-3); color: var(--fg-2); max-width: 760px; }
+.quota__linea { block-size: 2px; background: currentColor; position: relative; transform-origin: left center; }
+.quota__linea::before, .quota__linea::after { content: ""; position: absolute; inset-block-start: calc(var(--space-2) * -1); block-size: var(--space-4); inline-size: 2px; background: currentColor; }
+.quota__linea::before { inset-inline-start: var(--space-0); }
+.quota__linea::after { inset-inline-end: var(--space-0); }
+@media (prefers-reduced-motion: no-preference) {
+  .quota__linea { animation: traccia var(--dur-slow) var(--ease-enter) both; }
+  .quota__linea:nth-of-type(4) { animation-delay: var(--dur-fast); }
+  .hero h1 { animation: sale var(--dur-base) var(--ease-enter) both; }
+}
+@keyframes traccia { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes sale { from { opacity: 0; transform: translateY(var(--space-5)); } to { opacity: 1; transform: none; } }
+.hero__griglia { display: grid; gap: var(--space-6); }
+@media (min-width: 1024px) { .hero__griglia { grid-template-columns: 1.1fr 1fr; align-items: end; gap: var(--space-8); } }
+.hero__lead { max-width: 620px; }
+.posa { border: 2px solid var(--fg); background: var(--bg); }
+.posa__testa { display: flex; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-bottom: 2px solid var(--fg); }
+.posa__corpo { padding: var(--space-4) var(--space-3); display: grid; gap: var(--space-2); }
+.riga-cmd { display: flex; align-items: center; gap: var(--space-3); }
+.riga-cmd code { font-size: var(--body-sm); flex: 1; min-inline-size: 0; overflow-wrap: anywhere; }
+.riga-cmd code::before { content: "› "; color: var(--accent-text); font-weight: 600; }
+.copia {
+  font: inherit; font-family: var(--font-mono); font-size: var(--label); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: var(--space-2) var(--space-3); border: 2px solid var(--fg); background: var(--bg); color: var(--fg); cursor: pointer; flex: none; min-inline-size: calc(var(--space-7) + var(--space-5)); text-align: center;
+  transition: background-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+}
+.copia:hover { background: var(--fg); color: var(--bg); }
+.copia:active { background: var(--accent); border-color: var(--accent); color: var(--inchiostro); }
+.copia[data-fatto] { background: var(--f-server); border-color: var(--f-server); color: var(--bg); }
+.copia[data-fatto] > span { display: none; }
+.copia[data-fatto]::after { content: "Copiato"; }
+:root[data-lang="en"] .copia[data-fatto]::after { content: "Copied"; }
+.posa__nota { padding: var(--space-3); border-top: 2px dashed var(--rule); color: var(--fg-2); }
+.meta { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); color: var(--fg-2); }
+.meta b { color: var(--fg); font-weight: 600; }
+.azioni { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.bottone {
+  display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-5);
+  border: 2px solid var(--fg); text-decoration: none; font-family: var(--font-mono); font-size: var(--label); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  transition: background-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard), transform var(--dur-fast) var(--ease-standard);
+}
+.bottone--pieno { background: var(--fg); color: var(--bg); }
+.bottone:hover { background: var(--accent); border-color: var(--accent); color: var(--inchiostro); }
+.bottone:active { transform: translateY(2px); }
+
+/* problema */
+.tre { display: grid; gap: var(--space-0); border: 2px solid var(--fg); }
+@media (min-width: 768px) { .tre { grid-template-columns: repeat(3, 1fr); } }
+.tre > div { padding: var(--space-5); display: grid; gap: var(--space-3); align-content: start; border-bottom: 2px solid var(--fg); }
+.tre > div:last-child { border-bottom: 0; }
+@media (min-width: 768px) { .tre > div { border-bottom: 0; border-right: 2px solid var(--fg); } .tre > div:last-child { border-right: 0; } }
+.tre .num { color: var(--accent-text); }
+.tre code { font-size: var(--body-sm); background: var(--bg-2); padding: var(--space-0) var(--space-1); }
+
+/* ========== TAVOLE: sempre su carta, anche col tema scuro ========== */
+.tavole { display: grid; gap: var(--space-8); }
+.tavola {
+  --bg: var(--carta); --bg-2: var(--carta-2); --fg: var(--inchiostro); --fg-2: var(--inchiostro-2);
+  --hair: var(--carta-2); --rule: var(--filo); --accent: var(--vermiglio); --accent-text: var(--vermiglio-scuro);
+  --f-app: var(--cobalto); --f-sito: var(--vermiglio); --f-server: var(--verde); --f-mkt: var(--ocra);
+  color-scheme: light; margin: var(--space-0); background: var(--bg); color: var(--fg); padding: var(--space-3);
+  border: 2px solid var(--fg);
+}
+.tavola__foglio {
+  position: relative; border: 1px solid var(--fg); padding: var(--space-5) var(--space-4);
+  display: grid; gap: var(--space-5);
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--hair) 1px, transparent 1px), linear-gradient(90deg, var(--hair) 1px, transparent 1px);
+  background-size: var(--space-5) var(--space-5);
+}
+@media (min-width: 1024px) { .tavola__foglio { padding: var(--space-6) var(--space-6) var(--space-5); } }
+.reg { position: absolute; inline-size: var(--space-4); block-size: var(--space-4); }
+.reg::before, .reg::after { content: ""; position: absolute; background: var(--fg); }
+.reg::before { inset-inline: var(--space-0); inset-block-start: 50%; block-size: 1px; }
+.reg::after { inset-block: var(--space-0); inset-inline-start: 50%; inline-size: 1px; }
+.reg--tl { inset-block-start: var(--space-2); inset-inline-start: var(--space-2); }
+.reg--tr { inset-block-start: var(--space-2); inset-inline-end: var(--space-2); }
+.tavola__testa { display: grid; gap: var(--space-3); grid-template-columns: 1fr; padding-inline: var(--space-4); }
+@media (min-width: 1024px) { .tavola__testa { grid-template-columns: auto 1fr; column-gap: var(--space-6); align-items: end; } }
+.tavola__num { display: grid; gap: var(--space-1); }
+.tavola__num .display-lg { color: var(--accent); }
+.tavola__testa .lead { max-width: 680px; color: var(--fg-2); }
+.tavola__disegno { padding-inline: var(--space-0); }
+.cartiglio { display: grid; grid-template-columns: repeat(2, 1fr); border: 2px solid var(--fg); background: var(--bg); }
+.cartiglio > div { padding: var(--space-2) var(--space-3); border-right: 1px solid var(--fg); border-bottom: 1px solid var(--fg); display: grid; gap: var(--space-1); align-content: start; }
+.cartiglio > div:nth-child(2n) { border-right: 0; }
+.cartiglio > div:nth-child(n+5) { border-bottom: 0; }
+@media (min-width: 768px) and (max-width: 1023px) {
+  .cartiglio { grid-template-columns: repeat(3, 1fr); }
+  .cartiglio > div:nth-child(2n) { border-right: 1px solid var(--fg); }
+  .cartiglio > div:nth-child(3n) { border-right: 0; }
+  .cartiglio > div:nth-child(n+4) { border-bottom: 0; }
+  .cartiglio > div:nth-child(-n+3) { border-bottom: 1px solid var(--fg); }
+}
+@media (min-width: 1024px) {
+  .cartiglio { grid-template-columns: 0.9fr 0.65fr 1.5fr 1.75fr 0.95fr 1.55fr; }
+  .cartiglio .v { white-space: nowrap; }
+  .cartiglio > div:nth-child(n) { border-bottom: 0; border-right: 1px solid var(--fg); }
+  .cartiglio > div:last-child { border-right: 0; }
+}
+.cartiglio .label { color: var(--fg-2); }
+.cartiglio .v { font-family: var(--font-mono); font-size: var(--body-sm); font-weight: 600; line-height: 1.3; }
+.cartiglio .firma { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: var(--body-sm); }
+.nota { font-family: var(--font-mono); font-size: var(--label); font-weight: 600; letter-spacing: 0.04em; color: var(--accent-text); line-height: 1.4; }
+.nota code { white-space: nowrap; }
+.nota b { display: inline-grid; place-items: center; inline-size: var(--space-5); block-size: var(--space-5); border: 1.5px solid currentColor; border-radius: var(--radius-sm); margin-inline-end: var(--space-2); font-weight: 600; }
+
+/* TAV 01 — pianta */
+.pianta { display: grid; gap: var(--space-0); grid-template-columns: 1fr; border: 3px solid var(--fg); background: var(--bg); }
+@media (min-width: 768px) {
+  .pianta { grid-template-columns: 1fr 1fr; grid-template-areas: "app sito" "corr corr" "server mkt"; }
+  .stanza--app { grid-area: app; } .stanza--sito { grid-area: sito; } .stanza--server { grid-area: server; }
+  .corridoio { grid-area: corr; } .stanza--mkt { grid-area: mkt; }
+}
+.stanza { position: relative; padding: var(--space-5) var(--space-4) var(--space-4); display: grid; gap: var(--space-3); align-content: start; border: 1.5px solid var(--fg); background: var(--bg); }
+.stanza::before { content: ""; position: absolute; inset-inline: var(--space-0); inset-block-start: var(--space-0); block-size: var(--space-2); background: var(--c); }
+.stanza--app { --c: var(--f-app); } .stanza--sito { --c: var(--f-sito); } .stanza--server { --c: var(--f-server); } .stanza--mkt { --c: var(--f-mkt); }
+.stanza .label { color: var(--fg-2); }
+.percorsi { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-2); }
+.percorsi code { font-size: var(--body-sm); font-weight: 600; }
+.documenti { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.doc { display: inline-flex; align-items: center; gap: var(--space-2); font-family: var(--font-mono); font-size: var(--label); font-weight: 600; padding: var(--space-1) var(--space-2); border: 1.5px solid var(--fg); background: var(--bg); }
+.doc::before { content: ""; inline-size: var(--space-2); block-size: var(--space-3); border: 1.5px solid currentColor; border-top-right-radius: var(--space-1); }
+.sessione { justify-self: start; display: inline-flex; align-items: center; gap: var(--space-2); font-family: var(--font-mono); font-size: var(--label); font-weight: 600; letter-spacing: 0.04em; padding: var(--space-1) var(--space-3); background: var(--fg); color: var(--bg); }
+.sessione::before { content: ""; inline-size: var(--space-2); block-size: var(--space-2); border-radius: var(--radius-sm); background: var(--c); box-shadow: 0 0 0 2px var(--bg); }
+.corridoio {
+  padding: var(--space-4); display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-5); align-items: center; justify-content: center; border: 1.5px solid var(--fg);
+  background-image: repeating-linear-gradient(-45deg, var(--bg-2) 0 2px, var(--bg) 2px 12px);
+}
+.corridoio__cartello { background: var(--bg); border: 2px solid var(--fg); padding: var(--space-2) var(--space-4); display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-4); }
+.corridoio__freccia { font-family: var(--font-mono); font-weight: 600; color: var(--fg-2); background: var(--bg); padding-inline: var(--space-2); }
+.annotazioni { display: grid; gap: var(--space-3); margin-block-start: var(--space-4); }
+@media (min-width: 768px) { .annotazioni { grid-template-columns: repeat(3, 1fr); gap: var(--space-5); } }
+
+/* TAV 02 — ciclo */
+.ciclo { display: grid; gap: var(--space-4); grid-template-columns: 1fr; list-style: none; margin: var(--space-0); padding: var(--space-0); }
+@media (min-width: 768px) { .ciclo { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .ciclo { grid-template-columns: repeat(4, 1fr); } }
+.passo { position: relative; border: 2px solid var(--fg); background: var(--bg); padding: var(--space-4); display: grid; gap: var(--space-3); align-content: start; }
+.passo__n { font-family: var(--font-display); font-weight: 900; font-stretch: 125%; font-size: var(--display-md); line-height: 1; color: var(--fg); }
+.passo__n small { font-family: var(--font-mono); font-size: var(--label); color: var(--fg-2); font-weight: 600; letter-spacing: 0.08em; margin-inline-start: var(--space-2); vertical-align: middle; }
+.passo p { color: var(--fg-2); }
+.passo code { font-size: var(--body-sm); color: var(--fg); }
+.attore { justify-self: start; font-family: var(--font-mono); font-size: var(--label); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: var(--space-1) var(--space-2); border: 1.5px solid var(--fg); }
+.attore--hook { background: var(--accent); border-color: var(--accent); color: var(--inchiostro); }
+.attore--skill { background: var(--f-app); border-color: var(--f-app); color: var(--carta); }
+.attore--sub { background: var(--f-server); border-color: var(--f-server); color: var(--carta); }
+.attore--tu { background: var(--bg); }
+@media (min-width: 1024px) {
+  .passo:not(.passo--uscita):not(:nth-child(4))::after {
+    content: "→"; position: absolute; inset-inline-end: calc(var(--space-4) * -1 - 2px); inset-block-start: var(--space-4);
+    inline-size: var(--space-4); text-align: center; font-family: var(--font-mono); font-weight: 600; color: var(--accent-text); background: var(--bg);
+  }
+}
+.passo--uscita { border-style: dashed; background: var(--bg-2); }
+.passo--uscita .passo__n { color: var(--accent-text); }
+.legenda { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin-block-start: var(--space-4); }
+
+/* TAV 03 — distinta */
+.distinta { inline-size: 100%; border-collapse: collapse; border: 2px solid var(--fg); background: var(--bg); }
+.distinta th, .distinta td { text-align: left; vertical-align: top; padding: var(--space-3); border-bottom: 1px solid var(--fg); }
+.distinta thead th { white-space: nowrap; font-family: var(--font-mono); font-size: var(--label); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-2); border-bottom: 2px solid var(--fg); background: var(--bg-2); }
+.distinta td:first-child { font-family: var(--font-mono); font-weight: 600; color: var(--fg-2); inline-size: var(--space-7); }
+.distinta td.pezzo { min-inline-size: var(--space-11); }
+@media (min-width: 1024px) { .distinta td.pezzo { min-inline-size: var(--space-12); } }
+.distinta .pezzo strong { display: block; font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: var(--body-lg); line-height: 1.15; }
+.distinta .pezzo span { font-family: var(--font-mono); font-size: var(--label); color: var(--fg-2); }
+.distinta td { font-size: var(--body-sm); }
+.sigla { display: inline-flex; align-items: center; gap: var(--space-2); font-family: var(--font-mono); font-size: var(--label); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.sigla::before { content: ""; inline-size: var(--space-3); block-size: var(--space-3); background: var(--s); }
+.sigla--regola { --s: var(--fg); text-transform: none; letter-spacing: 0.02em; } .sigla--regola::before { block-size: 3px; }
+.sigla--skill { --s: var(--f-app); }
+.sigla--sub { --s: var(--f-server); } .sigla--sub::before { border-radius: 50%; }
+.sigla--hook { --s: var(--accent); } .sigla--hook::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.si, .no { font-family: var(--font-mono); font-weight: 600; font-size: var(--label); letter-spacing: 0.08em; text-transform: uppercase; }
+.si { color: var(--accent-text); } .no { color: var(--fg-2); }
+@media (max-width: 767px) {
+  .distinta, .distinta tbody, .distinta tr, .distinta td { display: block; }
+  .distinta thead { display: none; }
+  .distinta tr { border-bottom: 2px solid var(--fg); padding-block: var(--space-2); }
+  .distinta td { border: 0; padding-block: var(--space-1); }
+  .distinta td:nth-child(n+3)::before { display: block; font-family: var(--font-mono); font-size: var(--label); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-2); }
+  :root[data-lang="it"] .distinta td:nth-child(3)::before { content: "Quando scatta"; }
+  :root[data-lang="it"] .distinta td:nth-child(4)::before { content: "Cosa fa"; }
+  :root[data-lang="it"] .distinta td:nth-child(5)::before { content: "Scrive file"; }
+  :root[data-lang="en"] .distinta td:nth-child(3)::before { content: "When it fires"; }
+  :root[data-lang="en"] .distinta td:nth-child(4)::before { content: "What it does"; }
+  :root[data-lang="en"] .distinta td:nth-child(5)::before { content: "Writes files"; }
+}
+
+/* TAV 04 — guardiano */
+.guardia { display: grid; gap: var(--space-4); }
+@media (min-width: 768px) { .guardia { grid-template-columns: 1fr 1fr; } }
+.colonna { border: 2px solid var(--fg); background: var(--bg); }
+.colonna__testa { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-bottom: 2px solid var(--fg); }
+.colonna--no .colonna__testa { background: var(--accent); color: var(--inchiostro); }
+.colonna--si .colonna__testa { background: var(--f-server); color: var(--carta); }
+.colonna__segno { font-family: var(--font-display); font-weight: 900; font-size: var(--display-md); line-height: 1; }
+.colonna ul { list-style: none; margin: var(--space-0); padding: var(--space-0); }
+.colonna li { display: grid; gap: var(--space-1); padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--rule); }
+.colonna li:last-child { border-bottom: 0; }
+.colonna li code { font-size: var(--body-md); font-weight: 600; }
+.colonna--no li code { text-decoration: line-through; text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
+.colonna li span { font-size: var(--body-sm); color: var(--fg-2); }
+.terminale { background: var(--inchiostro); color: var(--carta); padding: var(--space-4); font-family: var(--font-mono); font-size: var(--body-sm); line-height: 1.55; border: 2px solid var(--inchiostro); }
+.terminale .x { color: var(--vermiglio-notte); font-weight: 600; }
+.terminale .tenue { color: var(--nebbia); }
+
+/* TAV 05 — parallelo */
+.parallelo { display: grid; gap: var(--space-4); grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1024px) { .parallelo { grid-template-columns: 1fr 1fr; } }
+.scenario { border: 2px solid var(--fg); background: var(--bg); padding: var(--space-4); display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); align-content: start; }
+.scenario__fig { overflow-x: auto; }
+.scenario svg { inline-size: 100%; block-size: auto; overflow: visible; }
+@media (max-width: 767px) { .scenario svg { min-inline-size: 440px; } }
+.scenario svg text { font-family: var(--font-mono); font-size: 12px; font-weight: 600; fill: var(--fg); }
+.scenario svg .t2 { fill: var(--fg-2); font-weight: 400; }
+.esito { display: inline-flex; gap: var(--space-2); align-items: center; font-family: var(--font-mono); font-size: var(--label); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--f-server); }
+
+/* installazione, uso, formato, faq */
+.schede { display: grid; gap: var(--space-4); }
+@media (min-width: 1024px) { .schede { grid-template-columns: 1.2fr 1fr 1fr; } }
+.scheda { border: 2px solid var(--fg); padding: var(--space-5); display: grid; gap: var(--space-4); align-content: start; background: var(--bg); }
+.scheda--prima { background: var(--fg); color: var(--bg); }
+.scheda--prima .copia { background: var(--fg); color: var(--bg); border-color: var(--bg); }
+.scheda--prima .copia:hover { background: var(--bg); color: var(--fg); }
+.scheda--prima .copia:active { background: var(--accent); border-color: var(--accent); color: var(--inchiostro); }
+.scheda--prima .copia[data-fatto] { background: var(--f-server); border-color: var(--f-server); color: var(--bg); }
+.scheda--prima :focus-visible { outline-color: var(--bg); }
+.scheda--prima .riga-cmd code::before { color: var(--accent-su-fg); }
+.scheda .label { color: var(--accent-text); }
+.scheda--prima .label { color: var(--accent-su-fg); }
+.scheda ol { margin: var(--space-0); padding-inline-start: var(--space-5); display: grid; gap: var(--space-2); }
+.scheda code { font-size: var(--body-sm); }
+.regola { border: 2px dashed var(--fg); padding: var(--space-5); display: grid; gap: var(--space-3); }
+@media (min-width: 1024px) { .regola { grid-template-columns: 1fr 2fr; align-items: center; gap: var(--space-6); } }
+
+.prompts { display: grid; gap: var(--space-0); border: 2px solid var(--fg); }
+@media (min-width: 768px) { .prompts { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .prompts { grid-template-columns: repeat(3, 1fr); } }
+.prompt { padding: var(--space-5); display: grid; gap: var(--space-3); align-content: start; border-bottom: 1px solid var(--fg); border-right: 1px solid var(--fg); }
+.prompt q { font-family: var(--font-display); font-weight: 700; font-stretch: 112%; font-size: var(--body-lg); line-height: 1.25; quotes: "«" "»"; }
+.prompt q[lang="en"] { quotes: "“" "”"; }
+.prompt q::before, .prompt q::after { color: var(--accent); }
+.prompt p { color: var(--fg-2); }
+
+.codice { background: var(--bg-2); border: 2px solid var(--fg); padding: var(--space-4); overflow-x: auto; font-size: var(--body-sm); line-height: 1.6; margin: var(--space-0); }
+.codice .k { color: var(--accent-text); font-weight: 600; }
+.regole-mappa { display: grid; gap: var(--space-5); }
+@media (min-width: 1440px) { .regole-mappa { grid-template-columns: max-content 1fr; align-items: start; gap: var(--space-6); } }
+.regole-mappa ul { margin: var(--space-0); padding: var(--space-0); list-style: none; display: grid; gap: var(--space-3); }
+@media (min-width: 768px) and (max-width: 1439px) { .regole-mappa ul { grid-template-columns: repeat(2, 1fr); gap: var(--space-3) var(--space-5); } }
+.regole-mappa li { padding-inline-start: var(--space-5); position: relative; }
+.regole-mappa li::before { content: ""; position: absolute; inset-inline-start: var(--space-0); inset-block-start: 0.6em; inline-size: var(--space-3); block-size: 2px; background: var(--accent); }
+
+.faq { display: grid; gap: var(--space-0); border-top: 2px solid var(--fg); }
+.faq details { border-bottom: 2px solid var(--fg); }
+.faq summary { cursor: pointer; list-style: none; padding: var(--space-4) var(--space-0); display: flex; justify-content: space-between; gap: var(--space-4); align-items: baseline; transition: color var(--dur-fast) var(--ease-standard); }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font-family: var(--font-mono); font-weight: 600; color: var(--accent-text); transition: transform var(--dur-fast) var(--ease-standard); }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq summary:hover { color: var(--accent-text); }
+.faq details > div { padding-block-end: var(--space-5); max-width: 760px; color: var(--fg-2); }
+.faq code { font-size: var(--body-sm); color: var(--fg); }
+
+/* piede */
+.piede { padding: var(--space-8) var(--space-4) var(--space-6); border-top: 2px solid var(--fg); }
+@media (min-width: 1024px) { .piede { padding: var(--space-9) var(--space-8) var(--space-6); } }
+.piede__inner { max-width: 1200px; margin-inline: auto; display: grid; gap: var(--space-6); }
+.piede__grande { color: transparent; -webkit-text-stroke: 2px var(--fg); }
+.piede__riga { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-6); justify-content: space-between; align-items: end; color: var(--fg-2); }
+.piede__firma { color: var(--fg); }
+
+.sr { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.tenue { color: var(--fg-2); }
+.accento { color: var(--accent-text); }
+
+/* contesto per l'export PNG delle tavole */
+body.solo-tavola { background: var(--carta); }
+body.solo-tavola .tavola { inline-size: 1240px; }
+</style>
+</head>
+<body>
+
+<header class="barra">
+  <div class="barra__inner">
+    <a class="marchio" href="#top" aria-label="Fronti">
+      <span class="marchio__f" aria-hidden="true">F</span>
+      <span class="label">Fronti</span>
+    </a>
+    <span class="label nascondi-mobile tenue"><span lang="it">plugin per Claude Code</span><span lang="en">a Claude Code plugin</span></span>
+    <nav class="barra__nav" aria-label="Navigazione">
+      <a class="label nascondi-mobile" href="#tavole"><span lang="it">Tavole</span><span lang="en">Plates</span></a>
+      <a class="label nascondi-mobile" href="#installa"><span lang="it">Installa</span><span lang="en">Install</span></a>
+      <a class="label" href="https://github.com/purpleheads2026/claude-fronti">GitHub ↗</a>
+      <div class="lingue" role="group" aria-label="Lingua / Language">
+        <button type="button" data-imposta="it" aria-pressed="true">IT</button>
+        <button type="button" data-imposta="en" aria-pressed="false">EN</button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero" aria-labelledby="titolo">
+  <div class="section__inner hero__inner">
+    <div class="hero__titolo">
+      <span class="label eyebrow"><span lang="it">Relazione tecnica · v1.0 · 11.10.2026</span><span lang="en">Technical report · v1.0 · 11.10.2026</span></span>
+      <h1 class="display-xl" id="titolo">Fronti<span class="punto">.</span></h1>
+      <div class="quota label" aria-hidden="true">
+        <span><span lang="it">1 progetto</span><span lang="en">1 project</span></span>
+        <span class="quota__linea"></span>
+        <span><span lang="it">n fronti</span><span lang="en">n fronts</span></span>
+        <span class="quota__linea"></span>
+        <span><span lang="it">n sessioni</span><span lang="en">n sessions</span></span>
+      </div>
+    </div>
+    <div class="hero__griglia">
+      <div style="display: grid; gap: var(--space-5);">
+        <p class="body-lg hero__lead" lang="it">Un progetto, più fronti, una sessione per fronte. App, sito, server e marketing smettono di pestarsi i piedi: ogni sessione di Claude Code lavora nel suo fronte, ricorda dove era rimasta e fa commit puliti.</p>
+        <p class="body-lg hero__lead" lang="en">One project, many fronts, one session per front. App, site, server and marketing stop stepping on each other: every Claude Code session works inside its own front, remembers where it left off and makes clean commits.</p>
+        <div class="meta label">
+          <span>MIT</span><span>v1.0.0</span><span>IT · EN</span>
+          <span><span lang="it">Firmato</span><span lang="en">Signed</span> <b>purpleheads — Samuel</b></span>
+        </div>
+        <div class="azioni">
+          <a class="bottone bottone--pieno" href="https://github.com/purpleheads2026/claude-fronti">GitHub ↗</a>
+          <a class="bottone" href="#tavole"><span lang="it">Come funziona ↓</span><span lang="en">How it works ↓</span></a>
+        </div>
+      </div>
+      <div class="posa" aria-labelledby="posa-t">
+        <div class="posa__testa label"><span id="posa-t"><span lang="it">Posa in opera</span><span lang="en">Install</span></span><span class="tenue">Claude Code</span></div>
+        <div class="posa__corpo">
+          <div class="riga-cmd"><code>/plugin marketplace add purpleheads2026/claude-fronti</code><button class="copia" type="button" data-copia="/plugin marketplace add purpleheads2026/claude-fronti"><span lang="it">Copia</span><span lang="en">Copy</span></button></div>
+          <div class="riga-cmd"><code>/plugin install fronti@claude-fronti</code><button class="copia" type="button" data-copia="/plugin install fronti@claude-fronti"><span lang="it">Copia</span><span lang="en">Copy</span></button></div>
+        </div>
+        <p class="posa__nota body-sm" lang="it">Nel prompt di Claude Code. Poi apri una sessione in un tuo progetto: al resto pensa lui.</p>
+        <p class="posa__nota body-sm" lang="en">In the Claude Code prompt. Then open a session in one of your projects: it takes it from there.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="problema-t">
+  <div class="section__inner">
+    <div class="section__head">
+      <span class="label eyebrow"><span lang="it">Premessa</span><span lang="en">Premise</span></span>
+      <h2 class="display-lg" id="problema-t"><span lang="it">Un progetto cresce per fronti. Le chat no.</span><span lang="en">Projects grow in fronts. Chats don't.</span></h2>
+    </div>
+    <div class="tre">
+      <div>
+        <span class="label num">01</span>
+        <h3 class="display-md"><span lang="it">La sessione unica si riempie.</span><span lang="en">One session fills up.</span></h3>
+        <p class="body-md" lang="it">Prima l'app, poi il sito, poi i social: tutto nella stessa chat. Si riempie, viene riassunta e perde i dettagli.</p>
+        <p class="body-md" lang="en">App first, then the site, then social: all in the same chat. It fills up, gets summarised and loses the details.</p>
+      </div>
+      <div>
+        <span class="label num">02</span>
+        <h3 class="display-md"><span lang="it">Le sessioni parallele si pestano i piedi.</span><span lang="en">Parallel sessions collide.</span></h3>
+        <p class="body-md" lang="it">Due chat sullo stesso repository, e un <code>git add -A</code> si porta via il lavoro dell'altra.</p>
+        <p class="body-md" lang="en">Two chats on one repository, and a <code>git add -A</code> sweeps up the other one's work.</p>
+      </div>
+      <div>
+        <span class="label num">03</span>
+        <h3 class="display-md"><span lang="it">Ogni volta si riparte da capo.</span><span lang="en">Every time, from scratch.</span></h3>
+        <p class="body-md" lang="it">Dove eravamo? Cosa mancava? Se lo stato vive solo nella chat, muore con lei.</p>
+        <p class="body-md" lang="en">Where were we? What was left? If state lives only in the chat, it dies with it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="tavole" aria-label="Tavole">
+  <div class="section__inner tavole">
+
+    <!-- ===================== TAV. 01 ===================== -->
+    <figure class="tavola" id="tav-01" aria-labelledby="tav-01-t">
+      <div class="tavola__foglio">
+        <span class="reg reg--tl" aria-hidden="true"></span><span class="reg reg--tr" aria-hidden="true"></span>
+        <header class="tavola__testa">
+          <div class="tavola__num"><span class="label"><span lang="it">Tavola</span><span lang="en">Plate</span></span><span class="display-lg">01</span></div>
+          <div style="display: grid; gap: var(--space-3);">
+            <h2 class="display-lg" id="tav-01-t"><span lang="it">La pianta del progetto</span><span lang="en">The project floor plan</span></h2>
+            <p class="body-md lead" lang="it">Ogni fronte è una stanza con la sua porta: percorsi, regole (<code>CLAUDE.md</code>), stato (<code>STATO.md</code>) e una sessione. I file condivisi sono il corridoio: ci passa una sessione alla volta.</p>
+            <p class="body-md lead" lang="en">Each front is a room with its own door: paths, rules (<code>CLAUDE.md</code>), state (<code>STATO.md</code>) and one session. Shared files are the corridor: one session at a time.</p>
+          </div>
+        </header>
+        <div class="tavola__disegno">
+          <div class="pianta" role="img" aria-label="Pianta di un progetto con quattro fronti: App, Sito, Server, Marketing, e un corridoio di file condivisi / Floor plan of a project with four fronts and a shared corridor">
+            <div class="stanza stanza--app">
+              <span class="label"><span lang="it">Fronte</span><span lang="en">Front</span> A</span>
+              <h3 class="display-md">App</h3>
+              <div class="percorsi"><code>app/</code><code>packages/</code><code>Cometa.xcodeproj/</code></div>
+              <div class="documenti"><span class="doc">CLAUDE.md</span><span class="doc">STATO.md</span></div>
+              <span class="sessione">Cometa · App</span>
+            </div>
+            <div class="stanza stanza--sito">
+              <span class="label"><span lang="it">Fronte</span><span lang="en">Front</span> B</span>
+              <h3 class="display-md"><span lang="it">Sito</span><span lang="en">Site</span></h3>
+              <div class="percorsi"><code lang="it">sito/</code><code lang="en">site/</code></div>
+              <div class="documenti"><span class="doc">CLAUDE.md</span><span class="doc">STATO.md</span></div>
+              <span class="sessione">Cometa · <span lang="it">Sito</span><span lang="en">Site</span></span>
+            </div>
+            <div class="stanza stanza--server">
+              <span class="label"><span lang="it">Fronte</span><span lang="en">Front</span> C</span>
+              <h3 class="display-md">Server</h3>
+              <div class="percorsi"><code>server/</code></div>
+              <div class="documenti"><span class="doc">CLAUDE.md</span><span class="doc">STATO.md</span></div>
+              <span class="sessione">Cometa · Server</span>
+            </div>
+            <div class="corridoio">
+              <span class="corridoio__freccia label" aria-hidden="true">← <span lang="it">corridoio</span><span lang="en">corridor</span> →</span>
+              <div class="corridoio__cartello">
+                <span class="label accento"><span lang="it">Condivisi · una sessione alla volta</span><span lang="en">Shared · one session at a time</span></span>
+                <div class="percorsi"><code>overview.md</code><code>CLAUDE.md</code><code>docs/</code><code>design/</code></div>
+              </div>
+            </div>
+            <div class="stanza stanza--mkt">
+              <span class="label"><span lang="it">Fronte</span><span lang="en">Front</span> D</span>
+              <h3 class="display-md">Marketing</h3>
+              <div class="percorsi"><code>marketing/</code></div>
+              <div class="documenti"><span class="doc">CLAUDE.md</span><span class="doc">STATO.md</span></div>
+              <span class="sessione">Cometa · Marketing</span>
+            </div>
+          </div>
+          <div class="annotazioni">
+            <p class="nota"><b>A</b><span lang="it">I muri sono i confini dei commit: una sessione aggiunge solo i percorsi della sua stanza.</span><span lang="en">Walls are commit boundaries: a session only stages its own room's paths.</span></p>
+            <p class="nota"><b>B</b><span lang="it">Ogni stanza ha la sua memoria. La chat finisce, <code>STATO.md</code> resta.</span><span lang="en">Every room keeps its own memory. The chat ends, <code>STATO.md</code> stays.</span></p>
+            <p class="nota"><b>C</b><span lang="it">La pianta vive in <code>overview.md</code>, sezione <code>## Fronti</code>.</span><span lang="en">The plan lives in <code>overview.md</code>, section <code>## Fronti</code>.</span></p>
+          </div>
+        </div>
+        <footer class="cartiglio">
+          <div><span class="label"><span lang="it">Progetto</span><span lang="en">Project</span></span><span class="v">Fronti</span></div>
+          <div><span class="label"><span lang="it">Tavola</span><span lang="en">Plate</span></span><span class="v">01 / 05</span></div>
+          <div><span class="label"><span lang="it">Oggetto</span><span lang="en">Subject</span></span><span class="v"><span lang="it">Pianta</span><span lang="en">Floor plan</span></span></div>
+          <div><span class="label"><span lang="it">Scala</span><span lang="en">Scale</span></span><span class="v"><span lang="it">1 sessione : 1 fronte</span><span lang="en">1 session : 1 front</span></span></div>
+          <div><span class="label"><span lang="it">Data</span><span lang="en">Date</span></span><span class="v">11.10.2026</span></div>
+          <div><span class="label"><span lang="it">Firma</span><span lang="en">Signed</span></span><span class="firma">purpleheads — Samuel</span></div>
+        </footer>
+      </div>
+    </figure>
+
+    <!-- ===================== TAV. 02 ===================== -->
+    <figure class="tavola" id="tav-02" aria-labelledby="tav-02-t">
+      <div class="tavola__foglio">
+        <span class="reg reg--tl" aria-hidden="true"></span><span class="reg reg--tr" aria-hidden="true"></span>
+        <header class="tavola__testa">
+          <div class="tavola__num"><span class="label"><span lang="it">Tavola</span><span lang="en">Plate</span></span><span class="display-lg">02</span></div>
+          <div style="display: grid; gap: var(--space-3);">
+            <h2 class="display-lg" id="tav-02-t"><span lang="it">Il ciclo di una sessione</span><span lang="en">A session, start to finish</span></h2>
+            <p class="body-md lead" lang="it">Sette passi, quattro attori. Tu chiedi; hook, skill e subagent tengono il lavoro dentro i confini.</p>
+            <p class="body-md lead" lang="en">Seven steps, four actors. You ask; hook, skill and subagents keep the work inside its borders.</p>
+          </div>
+        </header>
+        <div class="tavola__disegno">
+          <ol class="ciclo">
+            <li class="passo">
+              <span class="passo__n">01</span>
+              <span class="attore attore--hook">Hook · fronti-guard</span>
+              <h3 class="display-md"><span lang="it">Apri la sessione</span><span lang="en">Open the session</span></h3>
+              <p class="body-sm" lang="it">L'hook inietta la mappa dei fronti. Se manca, chiede di disegnarla prima di tutto.</p>
+              <p class="body-sm" lang="en">The hook injects the front map. If there is none, it asks to draw it first.</p>
+            </li>
+            <li class="passo">
+              <span class="passo__n">02</span>
+              <span class="attore attore--tu"><span lang="it">Sessione</span><span lang="en">Session</span></span>
+              <h3 class="display-md"><span lang="it">Dichiara il fronte</span><span lang="en">State the front</span></h3>
+              <p class="body-sm" lang="it">Prima riga della prima risposta: <code>Fronte: Sito (sito/)</code>.</p>
+              <p class="body-sm" lang="en">First line of the first reply: <code>Front: Site (site/)</code>.</p>
+            </li>
+            <li class="passo">
+              <span class="passo__n">03</span>
+              <span class="attore attore--skill">Skill · fronti-progetto</span>
+              <h3 class="display-md"><span lang="it">Entra in casa</span><span lang="en">Step inside</span></h3>
+              <p class="body-sm" lang="it">Legge <code>CLAUDE.md</code> e <code>STATO.md</code> del fronte: regole e punto in cui eravamo.</p>
+              <p class="body-sm" lang="en">Reads the front's <code>CLAUDE.md</code> and <code>STATO.md</code>: rules and where we left off.</p>
+            </li>
+            <li class="passo">
+              <span class="passo__n">04</span>
+              <span class="attore attore--tu"><span lang="it">Sessione</span><span lang="en">Session</span></span>
+              <h3 class="display-md"><span lang="it">Lavora nei confini</span><span lang="en">Work inside the lines</span></h3>
+              <p class="body-sm" lang="it">Solo i percorsi del fronte. Per un file condiviso lo dice prima, in una riga.</p>
+              <p class="body-sm" lang="en">Only the front's paths. Before touching a shared file it says so, in one line.</p>
+            </li>
+            <li class="passo">
+              <span class="passo__n">05</span>
+              <span class="attore attore--sub">Subagent · controllo-confini</span>
+              <h3 class="display-md"><span lang="it">Controlla i confini</span><span lang="en">Check the borders</span></h3>
+              <p class="body-sm" lang="it">Divide i file per fronte e restituisce il <code>git add</code> esatto.</p>
+              <p class="body-sm" lang="en">Sorts the files by front and returns the exact <code>git add</code>.</p>
+            </li>
+            <li class="passo">
+              <span class="passo__n">06</span>
+              <span class="attore attore--hook">Hook · fronti-guard</span>
+              <h3 class="display-md"><span lang="it">Commit mirato</span><span lang="en">Targeted commit</span></h3>
+              <p class="body-sm" lang="it"><code>git add -A</code> si ferma. Passa <code>git add -- 'sito/'</code>, con il prefisso <code>[sito]</code>.</p>
+              <p class="body-sm" lang="en"><code>git add -A</code> is stopped. <code>git add -- 'site/'</code> goes through, with the <code>[site]</code> prefix.</p>
+            </li>
+            <li class="passo">
+              <span class="passo__n">07</span>
+              <span class="attore attore--tu"><span lang="it">Sessione</span><span lang="en">Session</span></span>
+              <h3 class="display-md"><span lang="it">Aggiorna lo stato</span><span lang="en">Update the state</span></h3>
+              <p class="body-sm" lang="it"><code>STATO.md</code>: fatto, in corso, prossimi passi, decisioni.</p>
+              <p class="body-sm" lang="en"><code>STATO.md</code>: done, in progress, next steps, decisions.</p>
+            </li>
+            <li class="passo passo--uscita">
+              <span class="passo__n">↳</span>
+              <span class="attore attore--tu"><span lang="it">Uscita</span><span lang="en">Exit</span></span>
+              <h3 class="display-md"><span lang="it">Cambi fronte?</span><span lang="en">Switching front?</span></h3>
+              <p class="body-sm" lang="it">Sessione nuova. Claude ti dà il primo messaggio: «Riprendi il fronte Sito: leggi <code>sito/STATO.md</code>…»</p>
+              <p class="body-sm" lang="en">New session. Claude hands you the first message: “Resume the Site front: read <code>site/STATO.md</code>…”</p>
+            </li>
+          </ol>
+          <div class="legenda">
+            <span class="attore attore--hook">Hook</span><span class="body-sm tenue"><span lang="it">automatico</span><span lang="en">automatic</span></span>
+            <span class="attore attore--skill">Skill</span><span class="body-sm tenue"><span lang="it">regole e passi</span><span lang="en">rules and steps</span></span>
+            <span class="attore attore--sub">Subagent</span><span class="body-sm tenue"><span lang="it">analisi in disparte</span><span lang="en">analysis on the side</span></span>
+            <span class="attore attore--tu"><span lang="it">Sessione</span><span lang="en">Session</span></span><span class="body-sm tenue"><span lang="it">Claude che lavora con te</span><span lang="en">Claude working with you</span></span>
+          </div>
+        </div>
+        <footer class="cartiglio">
+          <div><span class="label"><span lang="it">Progetto</span><span lang="en">Project</span></span><span class="v">Fronti</span></div>
+          <div><span class="label"><span lang="it">Tavola</span><span lang="en">Plate</span></span><span class="v">02 / 05</span></div>
+          <div><span class="label"><span lang="it">Oggetto</span><span lang="en">Subject</span></span><span class="v"><span lang="it">Ciclo di sessione</span><span lang="en">Session cycle</span></span></div>
+          <div><span class="label"><span lang="it">Scala</span><span lang="en">Scale</span></span><span class="v"><span lang="it">7 passi : 4 attori</span><span lang="en">7 steps : 4 actors</span></span></div>
+          <div><span class="label"><span lang="it">Data</span><span lang="en">Date</span></span><span class="v">11.10.2026</span></div>
+          <div><span class="label"><span lang="it">Firma</span><span lang="en">Signed</span></span><span class="firma">purpleheads — Samuel</span></div>
+        </footer>
+      </div>
+    </figure>
+
+    <!-- ===================== TAV. 03 ===================== -->
+    <figure class="tavola" id="tav-03" aria-labelledby="tav-03-t">
+      <div class="tavola__foglio">
+        <span class="reg reg--tl" aria-hidden="true"></span><span class="reg reg--tr" aria-hidden="true"></span>
+        <header class="tavola__testa">
+          <div class="tavola__num"><span class="label"><span lang="it">Tavola</span><span lang="en">Plate</span></span><span class="display-lg">03</span></div>
+          <div style="display: grid; gap: var(--space-3);">
+            <h2 class="display-lg" id="tav-03-t"><span lang="it">Distinta dei pezzi</span><span lang="en">Bill of materials</span></h2>
+            <p class="body-md lead" lang="it">Cinque pezzi, un solo lavoro. Solo la skill scrive file, e solo documenti: il codice non lo sposta nessuno.</p>
+            <p class="body-md lead" lang="en">Five parts, one job. Only the skill writes files, and only documents: nobody moves your code.</p>
+          </div>
+        </header>
+        <div class="tavola__disegno">
+          <table class="distinta">
+            <thead>
+              <tr>
+                <th scope="col"><span lang="it">Pos.</span><span lang="en">No.</span></th>
+                <th scope="col"><span lang="it">Pezzo</span><span lang="en">Part</span></th>
+                <th scope="col"><span lang="it">Quando scatta</span><span lang="en">When it fires</span></th>
+                <th scope="col"><span lang="it">Cosa fa</span><span lang="en">What it does</span></th>
+                <th scope="col"><span lang="it">Scrive file</span><span lang="en">Writes files</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>01</td>
+                <td class="pezzo"><strong lang="it">Regola</strong><strong lang="en">Rule</strong><span class="sigla sigla--regola">CLAUDE.md</span></td>
+                <td><span lang="it">Sempre: è nel tuo <code>CLAUDE.md</code> globale.</span><span lang="en">Always: it sits in your global <code>CLAUDE.md</code>.</span></td>
+                <td><span lang="it">Dice a Claude il metodo: un fronte per sessione, stato nei file, commit mirati.</span><span lang="en">Tells Claude the method: one front per session, state in files, targeted commits.</span></td>
+                <td><span class="no"><span lang="it">No</span><span lang="en">No</span></span></td>
+              </tr>
+              <tr>
+                <td>02</td>
+                <td class="pezzo"><strong>fronti-progetto</strong><span class="sigla sigla--skill">Skill</span></td>
+                <td><span lang="it">Mappa mancante, cartelle fuori mappa, fronte nuovo, ripresa di un lavoro.</span><span lang="en">Missing map, unmapped folders, a new front, resuming work.</span></td>
+                <td><span lang="it">Disegna la mappa, crea <code>CLAUDE.md</code> e <code>STATO.md</code> per fronte, detta il protocollo.</span><span lang="en">Draws the map, creates each front's <code>CLAUDE.md</code> and <code>STATO.md</code>, sets the protocol.</span></td>
+                <td><span class="si"><span lang="it">Solo doc</span><span lang="en">Docs only</span></span></td>
+              </tr>
+              <tr>
+                <td>03</td>
+                <td class="pezzo"><strong>mappa-fronti</strong><span class="sigla sigla--sub">Subagent</span></td>
+                <td><span lang="it">Lo chiama la skill quando serve una mappa.</span><span lang="en">Called by the skill when a map is needed.</span></td>
+                <td><span lang="it">Legge il repository, capisce lo stack di ogni cartella, propone la sezione <code>## Fronti</code>.</span><span lang="en">Reads the repository, works out each folder's stack, proposes the <code>## Fronti</code> section.</span></td>
+                <td><span class="no"><span lang="it">No</span><span lang="en">No</span></span></td>
+              </tr>
+              <tr>
+                <td>04</td>
+                <td class="pezzo"><strong>controllo-confini</strong><span class="sigla sigla--sub">Subagent</span></td>
+                <td><span lang="it">Prima di ogni commit nei progetti con più fronti.</span><span lang="en">Before every commit in multi-front projects.</span></td>
+                <td><span lang="it">Classifica i file per fronte, segnala intrusi e stato da aggiornare, dà il <code>git add</code> esatto.</span><span lang="en">Sorts files by front, flags intruders and stale state, returns the exact <code>git add</code>.</span></td>
+                <td><span class="no"><span lang="it">No</span><span lang="en">No</span></span></td>
+              </tr>
+              <tr>
+                <td>05</td>
+                <td class="pezzo"><strong>fronti-guard</strong><span class="sigla sigla--hook">Hook</span></td>
+                <td><span lang="it">A ogni avvio di sessione e a ogni comando <code>git</code>.</span><span lang="en">On every session start and every <code>git</code> command.</span></td>
+                <td><span lang="it">Ricorda la mappa, segnala le cartelle orfane, blocca i commit «di tutto».</span><span lang="en">Recalls the map, flags orphan folders, blocks “commit everything”.</span></td>
+                <td><span class="no"><span lang="it">No</span><span lang="en">No</span></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <footer class="cartiglio">
+          <div><span class="label"><span lang="it">Progetto</span><span lang="en">Project</span></span><span class="v">Fronti</span></div>
+          <div><span class="label"><span lang="it">Tavola</span><span lang="en">Plate</span></span><span class="v">03 / 05</span></div>
+          <div><span class="label"><span lang="it">Oggetto</span><span lang="en">Subject</span></span><span class="v"><span lang="it">Distinta</span><span lang="en">Parts list</span></span></div>
+          <div><span class="label"><span lang="it">Scala</span><span lang="en">Scale</span></span><span class="v"><span lang="it">5 pezzi : 1 metodo</span><span lang="en">5 parts : 1 method</span></span></div>
+          <div><span class="label"><span lang="it">Data</span><span lang="en">Date</span></span><span class="v">11.10.2026</span></div>
+          <div><span class="label"><span lang="it">Firma</span><span lang="en">Signed</span></span><span class="firma">purpleheads — Samuel</span></div>
+        </footer>
+      </div>
+    </figure>
+
+    <!-- ===================== TAV. 04 ===================== -->
+    <figure class="tavola" id="tav-04" aria-labelledby="tav-04-t">
+      <div class="tavola__foglio">
+        <span class="reg reg--tl" aria-hidden="true"></span><span class="reg reg--tr" aria-hidden="true"></span>
+        <header class="tavola__testa">
+          <div class="tavola__num"><span class="label"><span lang="it">Tavola</span><span lang="en">Plate</span></span><span class="display-lg">04</span></div>
+          <div style="display: grid; gap: var(--space-3);">
+            <h2 class="display-lg" id="tav-04-t"><span lang="it">Il guardiano dei commit</span><span lang="en">The commit guard</span></h2>
+            <p class="body-md lead" lang="it">Nei progetti con due o più fronti, <code>fronti-guard</code> ferma i commit «di tutto» prima che partano, e spiega a Claude come farli giusti.</p>
+            <p class="body-md lead" lang="en">In projects with two or more fronts, <code>fronti-guard</code> stops “commit everything” before it runs, and tells Claude how to do it right.</p>
+          </div>
+        </header>
+        <div class="tavola__disegno" style="display: grid; gap: var(--space-4);">
+          <div class="guardia">
+            <div class="colonna colonna--no">
+              <div class="colonna__testa"><span class="colonna__segno" aria-hidden="true">✕</span><span class="label"><span lang="it">Fermati</span><span lang="en">Stopped</span></span></div>
+              <ul>
+                <li><code>git add -A</code><span lang="it">prende tutto il repository</span><span lang="en">grabs the whole repository</span></li>
+                <li><code>git add .</code><span lang="it">dalla radice, è lo stesso</span><span lang="en">from the root, same thing</span></li>
+                <li><code>git add -u</code><span lang="it">ogni modifica tracciata, di chiunque</span><span lang="en">every tracked change, anyone's</span></li>
+                <li><code>git commit -am '…'</code><span lang="it">committa tutto il tracciato</span><span lang="en">commits everything tracked</span></li>
+              </ul>
+            </div>
+            <div class="colonna colonna--si">
+              <div class="colonna__testa"><span class="colonna__segno" aria-hidden="true">✓</span><span class="label"><span lang="it">Passano</span><span lang="en">Allowed</span></span></div>
+              <ul>
+                <li><code lang="it">git add -- 'sito/'</code><code lang="en">git add -- 'site/'</code><span lang="it">solo il fronte della sessione</span><span lang="en">just this session's front</span></li>
+                <li><code lang="it">cd sito &amp;&amp; git add .</code><code lang="en">cd site &amp;&amp; git add .</code><span lang="it">il punto è dentro il fronte</span><span lang="en">the dot is inside the front</span></li>
+                <li><code lang="it">git commit -m '[sito] …'</code><code lang="en">git commit -m '[site] …'</code><span lang="it">prefisso del fronte nel messaggio</span><span lang="en">front prefix in the message</span></li>
+                <li><code>git status · git diff</code><span lang="it">leggere è sempre libero</span><span lang="en">reading is always free</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="terminale" lang="it"><span class="tenue">$ git add -A</span><br><span class="x">✕ fronti-guard:</span> 'git add -A' aggiunge al commit anche il lavoro degli altri fronti. Aggiungi solo i percorsi del fronte di questa sessione: <span class="tenue">git add -- 'sito/' &amp;&amp; git commit -m '[sito] …'</span></div>
+          <div class="terminale" lang="en"><span class="tenue">$ git add -A</span><br><span class="x">✕ fronti-guard:</span> 'git add -A' would also commit other fronts' work. Add only this session's front paths: <span class="tenue">git add -- 'site/' &amp;&amp; git commit -m '[site] …'</span></div>
+          <p class="nota" lang="it">Fronte unico o nessuna mappa: nessun blocco. Se chiedi tu di includere più fronti, Claude elenca i percorsi uno per uno.</p>
+          <p class="nota" lang="en">Single front or no map: nothing is blocked. If you ask to include several fronts, Claude lists the paths one by one.</p>
+        </div>
+        <footer class="cartiglio">
+          <div><span class="label"><span lang="it">Progetto</span><span lang="en">Project</span></span><span class="v">Fronti</span></div>
+          <div><span class="label"><span lang="it">Tavola</span><span lang="en">Plate</span></span><span class="v">04 / 05</span></div>
+          <div><span class="label"><span lang="it">Oggetto</span><span lang="en">Subject</span></span><span class="v"><span lang="it">Guardiano dei commit</span><span lang="en">Commit guard</span></span></div>
+          <div><span class="label"><span lang="it">Scala</span><span lang="en">Scale</span></span><span class="v"><span lang="it">2+ fronti : 0 sorprese</span><span lang="en">2+ fronts : 0 surprises</span></span></div>
+          <div><span class="label"><span lang="it">Data</span><span lang="en">Date</span></span><span class="v">11.10.2026</span></div>
+          <div><span class="label"><span lang="it">Firma</span><span lang="en">Signed</span></span><span class="firma">purpleheads — Samuel</span></div>
+        </footer>
+      </div>
+    </figure>
+
+    <!-- ===================== TAV. 05 ===================== -->
+    <figure class="tavola" id="tav-05" aria-labelledby="tav-05-t">
+      <div class="tavola__foglio">
+        <span class="reg reg--tl" aria-hidden="true"></span><span class="reg reg--tr" aria-hidden="true"></span>
+        <header class="tavola__testa">
+          <div class="tavola__num"><span class="label"><span lang="it">Tavola</span><span lang="en">Plate</span></span><span class="display-lg">05</span></div>
+          <div style="display: grid; gap: var(--space-3);">
+            <h2 class="display-lg" id="tav-05-t"><span lang="it">Lavorare in parallelo</span><span lang="en">Working in parallel</span></h2>
+            <p class="body-md lead" lang="it">Fronti diversi: due sessioni nella stessa cartella, ognuna col suo commit. Stesso codice: un worktree, un ramo, un merge.</p>
+            <p class="body-md lead" lang="en">Different fronts: two sessions in the same folder, each with its own commit. Same code: a worktree, a branch, a merge.</p>
+          </div>
+        </header>
+        <div class="tavola__disegno parallelo">
+          <div class="scenario">
+            <span class="label tenue">A · <span lang="it">Fronti diversi</span><span lang="en">Different fronts</span></span>
+            <div class="scenario__fig" tabindex="0">
+            <svg viewBox="0 0 520 200" role="img" aria-label="Due sessioni su fronti diversi fanno commit separati sullo stesso ramo / Two sessions on different fronts commit separately to the same branch">
+              <line x1="20" y1="100" x2="500" y2="100" stroke="var(--fg)" stroke-width="3"/>
+              <text x="20" y="128" class="t2">main</text>
+              <line x1="20" y1="36" x2="420" y2="36" stroke="var(--f-sito)" stroke-width="2" stroke-dasharray="6 6"/>
+              <line x1="20" y1="164" x2="420" y2="164" stroke="var(--f-app)" stroke-width="2" stroke-dasharray="6 6"/>
+              <text x="20" y="24" lang="it">Cometa · Sito</text><text x="20" y="24" lang="en">Cometa · Site</text>
+              <text x="20" y="188">Cometa · App</text>
+              <line x1="190" y1="36" x2="190" y2="100" stroke="var(--f-sito)" stroke-width="2"/>
+              <line x1="300" y1="164" x2="300" y2="100" stroke="var(--f-app)" stroke-width="2"/>
+              <line x1="390" y1="36" x2="390" y2="100" stroke="var(--f-sito)" stroke-width="2"/>
+              <circle cx="190" cy="100" r="9" fill="var(--f-sito)" stroke="var(--fg)" stroke-width="2"/>
+              <circle cx="300" cy="100" r="9" fill="var(--f-app)" stroke="var(--fg)" stroke-width="2"/>
+              <circle cx="390" cy="100" r="9" fill="var(--f-sito)" stroke="var(--fg)" stroke-width="2"/>
+              <text x="200" y="66" lang="it">[sito]</text><text x="200" y="66" lang="en">[site]</text>
+              <text x="310" y="140">[app]</text>
+              <text x="400" y="66" lang="it">[sito]</text><text x="400" y="66" lang="en">[site]</text>
+              <polygon points="500,100 488,93 488,107" fill="var(--fg)"/>
+            </svg>
+            </div>
+            <span class="esito">✓ <span lang="it">Stessa cartella, commit separati</span><span lang="en">Same folder, separate commits</span></span>
+          </div>
+          <div class="scenario">
+            <span class="label tenue">B · <span lang="it">Stesso codice</span><span lang="en">Same code</span></span>
+            <div class="scenario__fig" tabindex="0">
+            <svg viewBox="0 0 520 200" role="img" aria-label="Due sessioni sullo stesso codice: la seconda lavora in un worktree su un ramo e lo unisce / Two sessions on the same code: the second works in a worktree branch and merges it">
+              <line x1="20" y1="130" x2="500" y2="130" stroke="var(--fg)" stroke-width="3"/>
+              <text x="20" y="158" class="t2">main</text>
+              <path d="M110 130 C 150 130, 150 50, 200 50 L 360 50 C 410 50, 410 130, 450 130" fill="none" stroke="var(--f-app)" stroke-width="3"/>
+              <circle cx="110" cy="130" r="8" fill="var(--bg)" stroke="var(--fg)" stroke-width="2"/>
+              <circle cx="240" cy="50" r="9" fill="var(--f-app)" stroke="var(--fg)" stroke-width="2"/>
+              <circle cx="320" cy="50" r="9" fill="var(--f-app)" stroke="var(--fg)" stroke-width="2"/>
+              <circle cx="260" cy="130" r="9" fill="var(--f-app)" stroke="var(--fg)" stroke-width="2"/>
+              <rect x="441" y="121" width="18" height="18" fill="var(--accent)" stroke="var(--fg)" stroke-width="2"/>
+              <text x="150" y="28" lang="it">sessione 2 · worktree app/notifiche</text><text x="150" y="28" lang="en">session 2 · worktree app/notifications</text>
+              <text x="270" y="160" class="t2" lang="it">sessione 1 · main</text><text x="270" y="160" class="t2" lang="en">session 1 · main</text>
+              <text x="410" y="182">merge</text>
+              <polygon points="500,130 488,123 488,137" fill="var(--fg)"/>
+            </svg>
+            </div>
+            <span class="esito">✓ <span lang="it">Ognuno sul suo ramo, poi si unisce</span><span lang="en">Each on its own branch, then merge</span></span>
+          </div>
+        </div>
+        <footer class="cartiglio">
+          <div><span class="label"><span lang="it">Progetto</span><span lang="en">Project</span></span><span class="v">Fronti</span></div>
+          <div><span class="label"><span lang="it">Tavola</span><span lang="en">Plate</span></span><span class="v">05 / 05</span></div>
+          <div><span class="label"><span lang="it">Oggetto</span><span lang="en">Subject</span></span><span class="v"><span lang="it">Parallelo</span><span lang="en">Parallel work</span></span></div>
+          <div><span class="label"><span lang="it">Scala</span><span lang="en">Scale</span></span><span class="v"><span lang="it">n sessioni : 0 conflitti</span><span lang="en">n sessions : 0 clashes</span></span></div>
+          <div><span class="label"><span lang="it">Data</span><span lang="en">Date</span></span><span class="v">11.10.2026</span></div>
+          <div><span class="label"><span lang="it">Firma</span><span lang="en">Signed</span></span><span class="firma">purpleheads — Samuel</span></div>
+        </footer>
+      </div>
+    </figure>
+
+  </div>
+</section>
+
+<section class="section" id="installa" aria-labelledby="installa-t">
+  <div class="section__inner">
+    <div class="section__head">
+      <span class="label eyebrow"><span lang="it">Messa in opera</span><span lang="en">Setup</span></span>
+      <h2 class="display-lg" id="installa-t"><span lang="it">Tre modi di installarlo</span><span lang="en">Three ways to install</span></h2>
+    </div>
+    <div class="schede">
+      <div class="scheda scheda--prima">
+        <span class="label"><span lang="it">Plugin · consigliato</span><span lang="en">Plugin · recommended</span></span>
+        <h3 class="display-md"><span lang="it">Tutto insieme, hook compresi</span><span lang="en">Everything, hooks included</span></h3>
+        <div style="display: grid; gap: var(--space-2);">
+          <div class="riga-cmd"><code>/plugin marketplace add purpleheads2026/claude-fronti</code><button class="copia" type="button" data-copia="/plugin marketplace add purpleheads2026/claude-fronti"><span lang="it">Copia</span><span lang="en">Copy</span></button></div>
+          <div class="riga-cmd"><code>/plugin install fronti@claude-fronti</code><button class="copia" type="button" data-copia="/plugin install fronti@claude-fronti"><span lang="it">Copia</span><span lang="en">Copy</span></button></div>
+        </div>
+        <p class="body-sm" lang="it">Skill, due subagent e hook. L'hook parte da solo a ogni sessione: niente da configurare.</p>
+        <p class="body-sm" lang="en">Skill, two subagents and the hook. The hook runs on its own every session: nothing to configure.</p>
+      </div>
+      <div class="scheda">
+        <span class="label"><span lang="it">Solo la skill</span><span lang="en">Skill only</span></span>
+        <h3 class="display-md"><span lang="it">Per qualsiasi agente</span><span lang="en">For any agent</span></h3>
+        <div class="riga-cmd"><code>npx skills add purpleheads2026/claude-fronti</code><button class="copia" type="button" data-copia="npx skills add purpleheads2026/claude-fronti"><span lang="it">Copia</span><span lang="en">Copy</span></button></div>
+        <p class="body-sm" lang="it">Claude Code, Codex, Cursor e gli altri agenti che leggono <code>SKILL.md</code>. Senza hook: la regola la ricordi tu, o il tuo <code>CLAUDE.md</code>.</p>
+        <p class="body-sm" lang="en">Claude Code, Codex, Cursor and every agent that reads <code>SKILL.md</code>. No hook: you, or your <code>CLAUDE.md</code>, keep the rule.</p>
+      </div>
+      <div class="scheda">
+        <span class="label"><span lang="it">A mano</span><span lang="en">By hand</span></span>
+        <h3 class="display-md"><span lang="it">Copia quattro cose</span><span lang="en">Copy four things</span></h3>
+        <ol class="body-sm">
+          <li><code>skills/fronti-progetto/</code> → <code>~/.claude/skills/</code></li>
+          <li><code>agents/*.md</code> → <code>~/.claude/agents/</code></li>
+          <li><code>hooks/fronti-guard.py</code> → <code>~/.claude/hooks/</code></li>
+          <li lang="it">Gli hook in <code>~/.claude/settings.json</code>: lo snippet è nel README.</li>
+          <li lang="en">The hooks in <code>~/.claude/settings.json</code>: the snippet is in the README.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="regola">
+      <div style="display: grid; gap: var(--space-2);">
+        <span class="label accento"><span lang="it">Consigliato in ogni caso</span><span lang="en">Recommended either way</span></span>
+        <h3 class="display-md"><span lang="it">La regola nel CLAUDE.md</span><span lang="en">The rule in CLAUDE.md</span></h3>
+      </div>
+      <p class="body-md" lang="it">Incolla <code>regola/CLAUDE-snippet.md</code> nel tuo <code>CLAUDE.md</code> globale. Sono otto righe: Claude le segue anche quando l'hook tace, e anche negli agenti senza hook.</p>
+      <p class="body-md" lang="en">Paste <code>regola/CLAUDE-snippet.md</code> into your global <code>CLAUDE.md</code>. Eight lines: Claude follows them even when the hook is silent, and in agents with no hooks at all.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="uso-t">
+  <div class="section__inner">
+    <div class="section__head">
+      <span class="label eyebrow"><span lang="it">Uso quotidiano</span><span lang="en">Everyday use</span></span>
+      <h2 class="display-lg" id="uso-t"><span lang="it">Cosa chiedere</span><span lang="en">What to ask</span></h2>
+      <p class="body-lg" lang="it">La prima volta in un progetto la mappa si fa da sola. Dopo, bastano frasi normali.</p>
+      <p class="body-lg" lang="en">The first time in a project, the map draws itself. After that, plain sentences do.</p>
+    </div>
+    <div class="prompts">
+      <div class="prompt"><q lang="it">Mappa i fronti di questo progetto.</q><q lang="en">Map the fronts of this project.</q><p class="body-sm" lang="it">Pianta in <code>overview.md</code>, <code>CLAUDE.md</code> e <code>STATO.md</code> per fronte. Nessun file spostato.</p><p class="body-sm" lang="en">Plan in <code>overview.md</code>, <code>CLAUDE.md</code> and <code>STATO.md</code> per front. No file moved.</p></div>
+      <div class="prompt"><q lang="it">Lavoriamo sul fronte Sito: rifai la home.</q><q lang="en">Let's work on the Site front: redo the home page.</q><p class="body-sm" lang="it">Dichiara il fronte, legge le sue regole, resta in <code>sito/</code>.</p><p class="body-sm" lang="en">States the front, reads its rules, stays in <code>site/</code>.</p></div>
+      <div class="prompt"><q lang="it">Controlla i confini e fai il commit.</q><q lang="en">Check the borders and commit.</q><p class="body-sm" lang="it"><code>controllo-confini</code> separa i file e dà il <code>git add</code> giusto.</p><p class="body-sm" lang="en"><code>controllo-confini</code> sorts the files and gives the right <code>git add</code>.</p></div>
+      <div class="prompt"><q lang="it">Riprendi il fronte Marketing.</q><q lang="en">Resume the Marketing front.</q><p class="body-sm" lang="it">Riparte da <code>marketing/STATO.md</code> e dagli ultimi commit del fronte.</p><p class="body-sm" lang="en">Picks up from <code>marketing/STATO.md</code> and the front's latest commits.</p></div>
+      <div class="prompt"><q lang="it">Apriamo il fronte Server.</q><q lang="en">Let's open a Server front.</q><p class="body-sm" lang="it">Cartella, riga nella mappa, regole, stato e il nome della sessione nuova.</p><p class="body-sm" lang="en">Folder, map row, rules, state and the new session's name.</p></div>
+      <div class="prompt"><q lang="it">Fai il commit di tutto, anche dell'app.</q><q lang="en">Commit everything, the app too.</q><p class="body-sm" lang="it">Si può: lo chiedi tu, e i percorsi vengono elencati uno per uno.</p><p class="body-sm" lang="en">Allowed: you asked, and the paths get listed one by one.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="formato-t">
+  <div class="section__inner">
+    <div class="section__head">
+      <span class="label eyebrow"><span lang="it">Specifica</span><span lang="en">Spec</span></span>
+      <h2 class="display-lg" id="formato-t"><span lang="it">Il formato della mappa</span><span lang="en">The map format</span></h2>
+    </div>
+    <div class="regole-mappa">
+<pre class="codice" tabindex="0"><code><span class="k">## Fronti</span>
+
+| Fronte    | Percorsi                  | Casa         | Avvio | Sessione           |
+|-----------|---------------------------|--------------|-------|--------------------|
+| App       | `app/`, `packages/`       | `app/`       | —     | Cometa · App       |
+| Sito      | `sito/`                   | `sito/`      | —     | Cometa · Sito      |
+| Marketing | `marketing/`              | `marketing/` | —     | Cometa · Marketing |
+
+<span class="k">Condivisi</span> (una sessione alla volta): `overview.md`, `CLAUDE.md`, `docs/`</code></pre>
+      <ul class="body-md">
+        <li lang="it"><b>Percorsi</b>: tra backtick. Ogni cartella di primo livello sta in un fronte o tra i Condivisi, altrimenti l'hook la segnala.</li>
+        <li lang="en"><b>Paths</b>: in backticks. Every top-level folder belongs to a front or to Shared, or the hook flags it.</li>
+        <li lang="it"><b>Casa</b>: dove vivono <code>CLAUDE.md</code> e <code>STATO.md</code> del fronte.</li>
+        <li lang="en"><b>Home</b>: where the front's <code>CLAUDE.md</code> and <code>STATO.md</code> live.</li>
+        <li lang="it"><b>Progetto semplice</b>: una riga, percorso <code>.</code>. Niente burocrazia.</li>
+        <li lang="en"><b>Simple project</b>: one row, path <code>.</code>. No bureaucracy.</li>
+        <li lang="it">La scrive la skill. Tu puoi correggerla a mano quando vuoi.</li>
+        <li lang="en">The skill writes it. You can edit it by hand whenever you like.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="faq-t">
+  <div class="section__inner">
+    <div class="section__head">
+      <span class="label eyebrow"><span lang="it">Domande</span><span lang="en">Questions</span></span>
+      <h2 class="display-lg" id="faq-t">FAQ</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary class="display-md"><span lang="it">Sposta o rinomina i miei file?</span><span lang="en">Does it move or rename my files?</span></summary>
+        <div class="body-md"><p lang="it">No, mai. Se una cartella mescola due fronti te lo segnala, propone lo spostamento e aspetta il tuo sì.</p><p lang="en">No, never. If a folder mixes two fronts it tells you, proposes the move and waits for your yes.</p></div>
+      </details>
+      <details>
+        <summary class="display-md"><span lang="it">E per un progetto piccolo?</span><span lang="en">What about a small project?</span></summary>
+        <div class="body-md"><p lang="it">Fronte unico: una riga nella mappa e uno <code>STATO.md</code>. Il guardiano dei commit resta spento.</p><p lang="en">Single front: one map row and one <code>STATO.md</code>. The commit guard stays off.</p></div>
+      </details>
+      <details>
+        <summary class="display-md"><span lang="it">In che lingua parla?</span><span lang="en">What language does it speak?</span></summary>
+        <div class="body-md"><p lang="it">Le istruzioni sono in italiano, le risposte nella tua lingua. I messaggi dell'hook sono in italiano o inglese: <code>FRONTI_LANG=it|en</code>, altrimenti segue <code>LANG</code>.</p><p lang="en">Instructions are in Italian; replies come in your language. Hook messages are Italian or English: <code>FRONTI_LANG=it|en</code>, otherwise it follows <code>LANG</code>.</p></div>
+      </details>
+      <details>
+        <summary class="display-md"><span lang="it">Funziona senza git?</span><span lang="en">Does it work without git?</span></summary>
+        <div class="body-md"><p lang="it">La mappa, la skill e lo stato sì. Il guardiano dei commit e le cartelle fuori mappa hanno bisogno di git.</p><p lang="en">The map, the skill and the state do. The commit guard and unmapped-folder checks need git.</p></div>
+      </details>
+      <details>
+        <summary class="display-md"><span lang="it">Come lo spengo?</span><span lang="en">How do I turn it off?</span></summary>
+        <div class="body-md"><p lang="it"><code>/plugin disable fronti@claude-fronti</code>. Installato a mano: togli le righe di <code>fronti-guard</code> dal <code>settings.json</code>.</p><p lang="en"><code>/plugin disable fronti@claude-fronti</code>. Installed by hand: remove the <code>fronti-guard</code> lines from <code>settings.json</code>.</p></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="piede">
+  <div class="piede__inner">
+    <span class="display-xl piede__grande" aria-hidden="true">Fronti</span>
+    <div class="piede__riga">
+      <p class="body-md piede__firma" lang="it">Disegnato, scritto e firmato da <b>purpleheads — Samuel</b>. Licenza MIT.</p>
+      <p class="body-md piede__firma" lang="en">Drawn, written and signed by <b>purpleheads — Samuel</b>. MIT licence.</p>
+      <nav class="azioni" aria-label="Link">
+        <a class="label" href="https://github.com/purpleheads2026/claude-fronti">GitHub ↗</a>
+        <a class="label" href="https://github.com/purpleheads2026/claude-fronti/releases">Releases ↗</a>
+        <a class="label" href="https://github.com/purpleheads2026/claude-fronti/issues">Issues ↗</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<p id="avviso" class="sr" aria-live="polite"></p>
+<script>
+(function () {
+  var radice = document.documentElement;
+  var avviso = document.getElementById('avviso');
+  function annuncia(t) { if (avviso) { avviso.textContent = ''; setTimeout(function () { avviso.textContent = t; }, 50); } }
+  function leggi() { try { return localStorage.getItem('fronti-lingua'); } catch (e) { return null; } }
+  function salva(v) { try { localStorage.setItem('fronti-lingua', v); } catch (e) {} }
+  function imposta(l) {
+    radice.dataset.lang = l; radice.lang = l;
+    document.querySelectorAll('[data-imposta]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.imposta === l)); });
+  }
+  var dallUrl = new URLSearchParams(location.search).get('lang');
+  var iniziale = (dallUrl === 'it' || dallUrl === 'en') ? dallUrl : (leggi() || ((navigator.language || 'it').toLowerCase().startsWith('it') ? 'it' : 'en'));
+  imposta(iniziale);
+  document.querySelectorAll('[data-imposta]').forEach(function (b) {
+    b.addEventListener('click', function () { imposta(b.dataset.imposta); salva(b.dataset.imposta); });
+  });
+  document.querySelectorAll('[data-copia]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var fatto = function () { b.setAttribute('data-fatto', ''); annuncia(radice.dataset.lang === 'en' ? 'Copied to clipboard' : 'Copiato negli appunti'); setTimeout(function () { b.removeAttribute('data-fatto'); }, 1600); };
+      try { navigator.clipboard.writeText(b.dataset.copia).then(fatto, function () {}); } catch (e) {}
+    });
+  });
+})();
+</script>
+</body>
+</html>

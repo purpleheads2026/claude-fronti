@@ -1,0 +1,20 @@
+{
+  "name": "claude-fronti",
+  "owner": {
+    "name": "purpleheads — Samuel",
+    "url": "https://github.com/purpleheads2026"
+  },
+  "metadata": {
+    "description": "Fronti: un progetto, più fronti, una sessione per fronte."
+  },
+  "plugins": [
+    {
+      "name": "fronti",
+      "source": "./",
+      "description": "Divide ogni progetto in fronti di lavoro (app, sito, server, marketing, release) e fa lavorare ogni sessione su un fronte solo, con commit puliti.",
+      "version": "1.0.0",
+      "author": { "name": "purpleheads — Samuel" },
+      "license": "MIT"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "fronti",
+  "version": "1.0.0",
+  "description": "Un progetto, più fronti, una sessione per fronte. Divide app, sito, server e marketing in fronti di lavoro con confini, stato e commit puliti. One project, many fronts, one session per front.",
+  "author": {
+    "name": "purpleheads — Samuel",
+    "url": "https://github.com/purpleheads2026"
+  },
+  "homepage": "https://purpleheads2026.github.io/claude-fronti/",
+  "repository": "https://github.com/purpleheads2026/claude-fronti",
+  "license": "MIT",
+  "keywords": ["claude-code", "monorepo", "sessions", "workflow", "git", "worktree", "project-structure", "fronti"]
+}

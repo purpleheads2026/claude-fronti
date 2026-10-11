@@ -1,0 +1,114 @@
+{
+  "_comment": "FONTE DI VERITA' UNICA per la guida (docs/) e le tavole. Ogni spacing, font-size, colore ed easing usato nel CSS pesca da qui. Direzione: tavola tecnica da cantiere — carta, inchiostro, vermiglio; cartiglio, griglia, quote.",
+
+  "spacing": {
+    "_comment": "Scala 4px-based. Solo questi step per padding, margin, gap.",
+    "0": "0px",
+    "1": "4px",
+    "2": "8px",
+    "3": "12px",
+    "4": "16px",
+    "5": "24px",
+    "6": "32px",
+    "7": "48px",
+    "8": "64px",
+    "9": "96px",
+    "10": "128px",
+    "11": "192px",
+    "12": "256px"
+  },
+
+  "section": {
+    "padding-block-mobile": "var(--space-7)",
+    "padding-block-desktop": "var(--space-10)",
+    "padding-inline-mobile": "var(--space-4)",
+    "padding-inline-desktop": "var(--space-8)",
+    "gap-between-sections": "0"
+  },
+
+  "typography": {
+    "font-families": {
+      "display": "'Archivo', 'Helvetica Neue', sans-serif",
+      "body": "'Archivo', 'Helvetica Neue', sans-serif",
+      "mono": "'JetBrains Mono', ui-monospace, 'SF Mono', monospace",
+      "_note": "Archivo per titoli e testo corrente (asse wdth: 125 nei display, 100 nel testo); JetBrains Mono per etichette, quote, codice. Due famiglie."
+    },
+    "scale": {
+      "display-xl": { "clamp": "clamp(3.5rem, 11vw, 10rem)", "line-height": "0.88", "weight": 800, "use": "Titolo hero, uno per pagina" },
+      "display-lg": { "clamp": "clamp(2rem, 4.5vw, 4rem)", "line-height": "1.0", "weight": 800, "use": "Titoli di sezione e di tavola (H2)" },
+      "display-md": { "clamp": "clamp(1.375rem, 2.2vw, 2rem)", "line-height": "1.1", "weight": 700, "use": "Sottotitoli, nomi dei pezzi (H3)" },
+      "body-lg": { "clamp": "clamp(1.125rem, 1.5vw, 1.375rem)", "line-height": "1.45", "weight": 400, "use": "Lead" },
+      "body-md": { "clamp": "clamp(1rem, 1vw, 1.0625rem)", "line-height": "1.6", "weight": 400, "use": "Testo corrente" },
+      "body-sm": { "clamp": "clamp(0.875rem, 0.9vw, 0.9375rem)", "line-height": "1.5", "weight": 400, "use": "Note, didascalie, codice" },
+      "label": { "clamp": "clamp(0.6875rem, 0.75vw, 0.75rem)", "line-height": "1.25", "weight": 600, "use": "Etichette mono maiuscole, quote, cartiglio", "letter-spacing": "0.08em" }
+    }
+  },
+
+  "color": {
+    "space": {
+      "base": {
+        "carta": "#F0ECE4",
+        "carta-2": "#E5DFD3",
+        "filo": "#C4BDB0",
+        "inchiostro-2": "#625D55",
+        "inchiostro": "#17130F"
+      },
+      "accent": {
+        "vermiglio": "#E74423",
+        "vermiglio-scuro": "#B6351B"
+      },
+      "fronti": {
+        "cobalto": "#284CC3",
+        "verde": "#077649",
+        "ocra": "#DE9D16"
+      },
+      "notte": {
+        "notte": "#110E0A",
+        "notte-2": "#231E19",
+        "nebbia": "#A9A49B",
+        "vermiglio-notte": "#F57055",
+        "cobalto-notte": "#7295E9",
+        "verde-notte": "#54B581"
+      },
+      "_oklch": {
+        "carta": "oklch(94.5% 0.012 85)",
+        "carta-2": "oklch(90.5% 0.018 85)",
+        "filo": "oklch(80% 0.02 82)",
+        "inchiostro-2": "oklch(48% 0.014 75)",
+        "inchiostro": "oklch(19% 0.01 70)",
+        "vermiglio": "oklch(62% 0.205 33)",
+        "vermiglio-scuro": "oklch(52% 0.17 33)",
+        "cobalto": "oklch(47% 0.19 266)",
+        "verde": "oklch(50% 0.115 158)",
+        "ocra": "oklch(74% 0.15 78)",
+        "notte": "oklch(16.5% 0.01 70)",
+        "notte-2": "oklch(24% 0.012 70)",
+        "nebbia": "oklch(72% 0.014 80)",
+        "vermiglio-notte": "oklch(70% 0.17 33)",
+        "cobalto-notte": "oklch(68% 0.13 266)",
+        "verde-notte": "oklch(70% 0.12 158)"
+      },
+      "_contrasto": "inchiostro/carta 15.7 · inchiostro-2/carta 5.5 · vermiglio-scuro/carta 5.1 (testo piccolo in accento) · vermiglio/carta 3.4 (solo display e campiture) · inchiostro/vermiglio 4.6 (testo su campitura) · cobalto/carta 6.1 · verde/carta 4.8 · inchiostro/ocra 7.9 · carta/notte 16.3 · nebbia/notte 7.8 · vermiglio-notte/notte 6.7"
+    }
+  },
+
+  "motion": {
+    "easing": {
+      "standard": "power2.out",
+      "enter": "power3.out",
+      "exit": "power2.in",
+      "bounce-subtle": "back.out(1.4)"
+    },
+    "easing-css": {
+      "standard": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "enter": "cubic-bezier(0.215, 0.61, 0.355, 1)",
+      "exit": "cubic-bezier(0.55, 0.085, 0.68, 0.53)",
+      "bounce-subtle": "cubic-bezier(0.34, 1.4, 0.64, 1)"
+    },
+    "duration": { "fast": 0.3, "base": 0.6, "slow": 1.0 }
+  },
+
+  "radius": { "none": "0px", "sm": "4px", "md": "8px", "lg": "16px", "full": "9999px" },
+
+  "breakpoints": { "mobile": "0px", "tablet": "768px", "desktop": "1024px", "wide": "1440px" }
+}

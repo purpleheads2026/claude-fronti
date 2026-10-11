@@ -1,0 +1,12 @@
+{
+  "name": "fronti-tools",
+  "private": true,
+  "type": "module",
+  "description": "Rigenera i PNG delle tavole dalla guida HTML (docs/index.html).",
+  "scripts": {
+    "tavole": "node render-tavole.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.0"
+  }
+}

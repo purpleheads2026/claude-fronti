@@ -1,0 +1,29 @@
+{
+  "description": "Fronti: mappa dei fronti a inizio sessione, niente commit 'di tutto' nei progetti con piu' fronti.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/fronti-guard.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/fronti-guard.py\"",
+            "if": "Bash(git *)",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
